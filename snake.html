@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>贪吃蛇</title>
+	<style>
+	*{
+		margin: 0;
+		padding: 0;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+	html,body{
+		background: #000;
+	}
+	#stage{
+		position: relative;
+		width: 960px;
+		height: 640px;
+		border: 1px solid #fff;
+		margin: 0 auto;
+		overflow: hidden;
+	}
+	#food{
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		left: 0;
+		top: 0;
+		background: #fff;
+		display: none;
+	}
+	#snake>span{
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 10px;
+		height: 10px;
+		background: #000;
+		border: 1px solid #fff;
+		display: none;
+	}
+	#snake>span:first-child{
+		background: #fff;
+	}
+	#banner{
+		width: 960px;
+		height: 50px;
+		line-height: 50px;
+		font-size: 30px;
+		color: #fff;
+		text-align: center;
+		margin: 0 auto;
+	}
+	</style>
+</head>
+<body>
+	<div id="banner">贪吃蛇 created by yinshawnrao</div>
+	<div id="stage">
+		<div id="food"></div>
+		<div id="snake">
+			<span></span><span></span><span></span><span></span><span></span><span></span>
+			<span></span><span></span><span></span><span></span><span></span><span></span>
+			<span></span><span></span><span></span><span></span><span></span><span></span>
+			<span></span><span></span><span></span><span></span><span></span><span></span>	
+		</div>
+	</div>
+	<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+	<script>
+	(function($){
+		function Snake(){
+			this.foodEle = $('#food');
+			this.snakeEle = $('#snake');
+			this.snakeBone = $('#snake').find('span');
+			this.snakeHead = $('#snake').find('span').first();
+			this.snakeLen = $('#snake').find('span').length;
+			this.initSnakePosMap = {x: 100,y: 100};
+			this.unitWidth = $('#food').width();
+			this.stageWidth = $('#stage').width();
+			this.stageHeight = $('#stage').height();
+			this.disableLeft = true,
+			this.disableUp = false,
+			this.disableRight = false,
+			this.disableDown = false;
+			this.direct = 'right';
+			this.trackMap = [];
+			this.keyMap = {
+				37: 'left',
+				38: 'up',
+				39: 'right',
+				40: 'down'
+			};
+		};
+		Snake.prototype = {
+			constructor: Snake,
+			init: function(){
+				this.renderFood()
+					.renderSnake()
+					.startGame();
+			},
+			startGame: function(){
+				var _self = this;
+				this.setInterval(this.move(),100,this.gameOver);
+				$(document).on('keyup',function(e){
+					var keyCode = e.keyCode || e.which;
+					e.preventDefault && e.preventDefault();
+					switch(keyCode){
+						case 37:
+						if(_self.disableLeft){
+							return false;
+						}else{
+							_self.direct = _self.keyMap[keyCode];	
+						}
+						_self.disableRight = true;
+						_self.disableUp = false;
+						_self.disableDown = false;
+						break;
+						case 38:
+						if(_self.disableUp){
+							return false;
+						}else{
+							_self.direct = _self.keyMap[keyCode];	
+						}
+						_self.disableDown = true;
+						_self.disableLeft = false;
+						_self.disableRight = false;
+						break;
+						case 39:
+						if(_self.disableRight){
+							return false;
+						}else{
+							_self.direct = _self.keyMap[keyCode];	
+						}
+						_self.disableLeft = true;
+						_self.disableUp = false;
+						_self.disableDown = false;
+						break;
+						case 40:
+						if(_self.disableDown){
+							return false;
+						}else{
+							_self.direct = _self.keyMap[keyCode];	
+						}
+						_self.disableUp = true;
+						_self.disableLeft = false;
+						_self.disableRight = false;
+						break;
+						default:
+						break;
+					}	
+					return false;
+				});
+				return this;
+			},
+			move: function(keyCode){
+				var _self = this;
+				return function(){
+					var curPos = _self.getSnakeBonePos();
+					var movePosMap;
+					switch(_self.direct){
+						case 'left':
+							movePosMap = {
+								'left': curPos[0].x - _self.unitWidth + 'px',
+								'top': curPos[0].y + 'px'
+							};
+							break;
+						case 'up':
+							movePosMap = {
+								'left': curPos[0].x + 'px',
+								'top': curPos[0].y - _self.unitWidth + 'px'
+							};
+						break;
+						case 'right':
+							movePosMap = {
+								'left': curPos[0].x + _self.unitWidth + 'px',
+								'top': curPos[0].y + 'px'
+							};							
+						break;
+						case 'down':
+							movePosMap = {
+								'left': curPos[0].x + 'px',
+								'top': curPos[0].y + _self.unitWidth + 'px'
+							};						
+						break;
+						default:
+						break;
+					};
+					_self.track();
+					_self.snakeHead.css(movePosMap);
+					_self.strikeFood(_self.snakeHead);
+				};
+			},
+			checkGameOver: function(){
+				var isGG = false;
+				var headPosX = this.snakeHead[0].offsetLeft;
+				var headPosY = this.snakeHead[0].offsetTop;
+				var isHitWall = (headPosX < 0 || headPosX > this.stageWidth || headPosY < 0 || headPosY > this.stageHeight);
+				var isHitBody = false;
+				var snakeBonePos = this.getSnakeBonePos();
+				snakeBonePos.shift();
+				for(var pos in snakeBonePos){
+					if(snakeBonePos.length == 1){
+						break;
+					}
+					if(headPosX == snakeBonePos[pos]['x'] && headPosY == snakeBonePos[pos]['y']){
+						isHitBody = true;
+						break;
+					}
+				}
+				if(isHitWall || isHitBody){
+					isGG = true;
+				}
+				return isGG;
+			},
+			gameOver: function(_self){
+				if(_self.checkGameOver()){
+					alert('游戏失败了，请刷新浏览器再次挑战！');
+					return true;
+				}
+			},
+			track: function(){
+				var curBone = $('#snake').find('span');
+				var snakeBonePos = this.getSnakeBonePos();
+				for(var i = 1; i < $('#snake').find('span').length; i++){
+					curBone.eq(i).css({
+						'left': snakeBonePos[i - 1].x + 'px',
+						'top': snakeBonePos[i - 1].y + 'px'
+					}).show();
+				}
+			},
+			strikeFood: function(head){
+				var headPosX = head[0].offsetLeft;
+				var headPosY = head[0].offsetTop;
+				var foodPosX = this.foodEle[0].offsetLeft;
+				var foodPosY = this.foodEle[0].offsetTop;
+				if((headPosX == foodPosX) && (headPosY == foodPosY)){
+					this.snakeEle.append($('<span></span>'));
+					this.renderFood();
+				}
+			},
+			setInterval: function(timer,time,stopTrigger){
+				var _self = this;
+				return (function _interval(){
+					setTimeout(function(){
+						if(stopTrigger(_self)) return;
+						timer();
+						_interval();
+					},time);
+				})();
+			},
+			renderSnake: function(){
+				for(var i = 0, len = this.snakeBone.length; i < len; i++){
+					var bone = this.snakeBone.eq(i);
+					bone.css({
+						'left': this.initSnakePosMap.x + (this.snakeLen - 1 - i) * this.unitWidth + 'px',
+						'top': this.initSnakePosMap.y + 'px'
+					}).show();
+				}
+				return this;
+			},
+			getSnakeBonePos: function(){
+				var curSnakeBone = $('#snake').find('span');
+				var snakeBonePos = [];
+				curSnakeBone.each(function(idx,item){
+					var snakeBoneItem = {};
+					snakeBoneItem.x = item.offsetLeft;
+					snakeBoneItem.y = item.offsetTop;
+					snakeBonePos.push(snakeBoneItem);
+				});
+				return snakeBonePos;
+			},
+			renderFood: function(){
+				var posMap = {
+					'left': this.getRandomNum(0,this.stageWidth/this.unitWidth) * 10 + 'px',
+					'top': this.getRandomNum(0,this.stageHeight/this.unitWidth) * 10 + 'px'
+				};
+				var snakePosMap = this.getSnakeBonePos();
+				var isTouchedSnake = false;
+				for(var pos in snakePosMap){
+					if(posMap['left'] == snakePosMap[pos]['x'] || posMap['top'] == snakePosMap[pos]['y']){
+						isTouchedSnake = true;
+					}
+				}
+				isTouchedSnake && renderFood();
+				this.foodEle.css(posMap).show(); 
+				return this;
+			},
+			getRandomNum: function(min,max){
+				return Math.round(Math.random()*(max - min) + min);
+			}	
+		}
+		return new Snake().init();
+	})(jQuery);
+	</script>
+</body>
+</html>
