@@ -62,8 +62,6 @@
 		<div id="snake">
 			<span></span><span></span><span></span><span></span><span></span><span></span>
 			<span></span><span></span><span></span><span></span><span></span><span></span>
-			<span></span><span></span><span></span><span></span><span></span><span></span>
-			<span></span><span></span><span></span><span></span><span></span><span></span>	
 		</div>
 	</div>
 	<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
@@ -91,6 +89,7 @@
 				39: 'right',
 				40: 'down'
 			};
+			this.clicking = true;
 		};
 		Snake.prototype = {
 			constructor: Snake,
@@ -101,8 +100,26 @@
 			},
 			startGame: function(){
 				var _self = this;
-				this.setInterval(this.move(),100,this.gameOver);
-				$(document).on('keyup',function(e){
+
+				var speed = this.getUrlParam('speed');
+				if(!speed){
+					speed = 100;
+				}else{
+					if(speed < 10){
+						speed = 10;
+					}else if(speed > 300){
+						speed = 300;
+					}
+				}
+				this.setInterval(this.move(),speed,this.gameOver);
+				$(document).on('keydown',function(e){
+					if(!_self.clicking){
+						return;
+					}
+					_self.clicking = false;
+					setTimeout(function(){
+						_self.clicking = true;
+					},200);
 					var keyCode = e.keyCode || e.which;
 					e.preventDefault && e.preventDefault();
 					switch(keyCode){
@@ -157,7 +174,7 @@
 				var _self = this;
 				return function(){
 					var curPos = _self.getSnakeBonePos();
-					var movePosMap;
+					var movePosMap;					
 					switch(_self.direct){
 						case 'left':
 							movePosMap = {
@@ -288,6 +305,10 @@
 			},
 			getRandomNum: function(min,max){
 				return Math.round(Math.random()*(max - min) + min);
+			},
+			getUrlParam: function(name){
+				return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)', "ig")
+					.exec(location.search) || [, ""])[1].replace(/\+/g, '%20')) || null;
 			}	
 		}
 		return new Snake().init();
