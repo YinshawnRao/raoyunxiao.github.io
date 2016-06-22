@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>快速抓取QQ头像</title>
+	<style>
+	#qqno{width: 200px;height: 20px;line-height: 20px;}
+	</style>
+</head>
+<body>
+	<input type="text" placeholder="请输入QQ号" id="qqno">
+	<button id="down">下载头像</button>
+	<script>
+		var oBtn = document.getElementById('down');var oQQ = document.getElementById('qqno');oBtn.onclick = function(){
+			var qq = oQQ.value;if(qq == ''){return alert('请输入！');}
+			if(!(/\d/.test(qq))){return alert('请输入数字！');}
+			var oLink = document.createElement('a');oLink.href = 'http://q.qlogo.cn/g?b=qq&nk='+qq+'&s=100';oLink.setAttribute('download', qq + '_pic');
+			var e = document.createEvent("MouseEvents");e.initEvent("click",true,true);oLink.dispatchEvent(e);
+		}
+	</script>
+</body>
+</html>
