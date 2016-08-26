@@ -4,6 +4,11 @@
 	<meta charset="UTF-8">	
 	<title>家</title>
 	<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<style>
+	#myModal{		
+		text-align: center;
+	}
+	</style>
 </head>
 <body>
 	<div class="container-fluid">	
@@ -20,7 +25,7 @@
 				<th><span class="glyphicon glyphicon-user"></span> 联系方式</th>
 			</thead>	  
 			<tbody>
-				<tr>
+				<tr data-toggle="modal" data-target=".bs-example-modal-lg" data-img="https://img3.doubanio.com/view/group_topic/large/public/p53852326.jpg;https://img3.doubanio.com/view/group_topic/large/public/p53852232.jpg;https://img1.doubanio.com/view/group_topic/large/public/p53852248.jpg;https://img1.doubanio.com/view/group_topic/large/public/p53852339.jpg;https://img1.doubanio.com/view/group_topic/large/public/p53852309.jpg">
 					<td>南山区学府路荔芳村A栋6楼</td>
 					<td>桃园/南山</td>
 					<td>一室一厅</td>
@@ -28,8 +33,36 @@
 					<td>豆瓣</td>
 					<td>18038189988</td>
 				</tr>
+				<tr data-toggle="modal" data-target=".bs-example-modal-lg" data-img="https://img3.doubanio.com/view/group_topic/large/public/p54023900.jpg;https://img3.doubanio.com/view/group_topic/large/public/p54023902.jpg;https://img1.doubanio.com/view/group_topic/large/public/p54023907.jpg;https://img3.doubanio.com/view/group_topic/large/public/p54023911.jpg">
+					<td>翻身地铁附近裕安路口旁</td>
+					<td>翻身</td>
+					<td>两室一厅</td>
+					<td>3600</td>
+					<td>豆瓣</td>
+					<td>15200801035</td>
+				</tr>
 			</tbody>
 		</table>
+	</div>	
+	<div id="myModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+	  <div class="modal-dialog modal-lg" role="document">
+	    <div class="modal-content">      
+	    </div>
+	  </div>
 	</div>
+	<script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+	<script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	<script>
+		$('#myModal').on('show.bs.modal', function (event) {
+		  var button = $(event.relatedTarget) // Button that triggered the modal
+		  var src = button.data('img').split(';') // Extract info from data-* attributes
+		  var modal = $(this)
+		  var htmlStr = '';
+		  for(var i = 0; i < src.length; i++){
+		  	htmlStr += '<img src=' + src[i] + '>';
+		  }
+		  modal.find('.modal-content').html(htmlStr);
+		})
+	</script>
 </body>
 </html>
